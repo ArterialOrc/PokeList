@@ -16,9 +16,12 @@ builder.Services.AddScoped<IFightStatisticService, FightStatisticService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPokeApi, PokeApi>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddStackExchangeRedisCache(options => {
+    options.Configuration = "localhost";
+    options.InstanceName = "local";
+});
 builder.Services.AddAuthentication("Cookies").AddCookie(options => options.LoginPath = "/login");
 builder.Services.AddAuthorization();
-builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IFileProvider>(
         new PhysicalFileProvider(
             Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
