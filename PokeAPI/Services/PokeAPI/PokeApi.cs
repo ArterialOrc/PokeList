@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using PokeAPI.Models;
 
 namespace PokeAPI.Services.PokeAPI
@@ -7,6 +9,12 @@ namespace PokeAPI.Services.PokeAPI
     public class PokeApi : IPokeApi
     {
         private const string _API_URL = "https://pokeapi.co/api/v2/pokemon";
+        private IDistributedCache cache;
+        
+        public PokeApi(IDistributedCache cache)
+        {
+            this.cache = cache;
+        }
 
         private async Task<int> GetPokeCount()
         {
@@ -52,7 +60,9 @@ namespace PokeAPI.Services.PokeAPI
 
         public async Task<Pokemon> GetPokeInf(int id)
         {
-            Pokemon pokemon = null!;
+            var pokemonString = await cache.GetStringAsync(id.ToString());
+            if (!string.IsNullOrEmpty(pokemonString))
+                return JsonSerializer.Deserialize<Pokemon>(pokemonString);
 
             using (var client = new HttpClient())
             {
@@ -61,7 +71,13 @@ namespace PokeAPI.Services.PokeAPI
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var pokeData = JObject.Parse(content);
-                    pokemon = new Pokemon()
+                    Match match = Regex.Match((string)pokeData["sprites"]["other"]["official-artwork"]["front_default"], "[^\\:]+\\.png");
+                    string img = "https:";
+                    if (match.Success)
+                    {
+                        img += match.Captures[0].Value;
+                    }
+                    var pokemon = new Pokemon()
                     {
                         Id = int.Parse((string)pokeData["id"]),
                         Name = (string)pokeData["name"],
@@ -69,11 +85,17 @@ namespace PokeAPI.Services.PokeAPI
                         AttackPower = int.Parse((string)pokeData["stats"][1]["base_stat"]),
                         Height = int.Parse((string)pokeData["height"]),
                         Weight = int.Parse((string)pokeData["weight"]),
-                        Image = (string?)pokeData["sprites"]["other"]["official-artwork"]["front_default"]
+                        Image = img
                     };
+                    pokemonString = JsonSerializer.Serialize(pokemon);
+                    await cache.SetStringAsync(pokemon.Id.ToString(), pokemonString, new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+                    });
+                    return pokemon;
                 }
             }
-            return pokemon;
+            return null;
         }
         public async Task<int> GetPokeRandom()
         {
