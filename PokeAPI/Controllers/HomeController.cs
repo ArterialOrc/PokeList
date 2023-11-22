@@ -137,7 +137,7 @@ namespace PokeAPI.Controllers
         {
             var request = HttpContext.Request;
             var body = await request.ReadFromJsonAsync<Email>();
-            string pass = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("YandexSMTP")["Password"];
+            string pass = Environment.GetEnvironmentVariable("YASMTP_PASSWORD");
             if(body != null)
             {
                 await service.SendEmailAsync(body.statistic.winPoke,body.statistic.losPoke, body.email,pass);

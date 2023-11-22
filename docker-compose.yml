@@ -19,16 +19,18 @@ services:
       - redis
     links:
       - "redis"
+    env_file:
+      - PokeAPI/Env/.env.docker
       
   postgres_db:
     container_name: postgres
     image: postgres:latest
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 355373
-      POSTGRES_DB: pokeAPI
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
     networks:
       - poke-api-dev
     volumes:
@@ -38,7 +40,7 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
     networks:
       - poke-api-dev
     volumes:
@@ -46,7 +48,7 @@ services:
       - /path/to/local/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_PASSWORD=poke-api
-      - REDIS_PORT=6379
+      - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_DATABASES=16
 volumes:
   postgres-data:
