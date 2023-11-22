@@ -16,9 +16,9 @@ builder.Services.AddScoped<IFightStatisticService, FightStatisticService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPokeApi, PokeApi>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddStackExchangeRedisCache(options => {
-    options.Configuration = "localhost";
-    options.InstanceName = "local";
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "redis:6379";
 });
 builder.Services.AddAuthentication("Cookies").AddCookie(options => options.LoginPath = "/login");
 builder.Services.AddAuthorization();
