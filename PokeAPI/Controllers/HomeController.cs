@@ -112,10 +112,8 @@ namespace PokeAPI.Controllers
         }
 
         [HttpPost("pokemon/fight/{myNum}")]
-        public async Task<IActionResult> PokemonAttack([FromServices] IPokeApi pokeApi,int myNum)
+        public Task<IActionResult> PokemonAttack([FromServices] IPokeApi pokeApi,int myNum,[FromBody] EnemiesPokes lst)
         {
-            var request = HttpContext.Request;
-            var lst = await request.ReadFromJsonAsync<EnemiesPokes>();
             if(lst != null)
             {
                 var rnd = new Random().Next(10);
@@ -128,10 +126,10 @@ namespace PokeAPI.Controllers
                 {
                     pokeApi.PokemonAttack(lst.enemyPoke,lst.myPoke.AttackPower);
                 }
-                return Json(new List<Pokemon>() {lst.myPoke,lst.enemyPoke});
+                return Task.FromResult<IActionResult>(Json(new List<Pokemon>() {lst.myPoke,lst.enemyPoke}));
             }
 
-            return Json(null);
+            return Task.FromResult<IActionResult>(Json(null));
         }
         
         [HttpPost("pokemon/email")]

@@ -114,6 +114,7 @@ $(async function () {
     })
 
     $('.attack__btn').on('click', async function (event) {
+        let hp1 = pokemons[0]['hp']
         let myNum = $('.fight__select').val()
         let response = await fetch(`pokemon/fight/${myNum}`, {
             method: "POST",
@@ -125,6 +126,12 @@ $(async function () {
         });
         if (response.ok) {
             pokemons = await response.json()
+        }
+        if(pokemons[0]['hp']!==hp1){
+            $('.fight__history').append(`<div>Удар нанёс ${pokemons[1]['name']}<div>`)
+        }
+        else{
+            $('.fight__history').append(`<div>Удар нанёс ${pokemons[0]['name']}<div>`)
         }
 
         reprintCards([pokemons[0], pokemons[1]])
