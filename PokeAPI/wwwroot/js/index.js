@@ -35,6 +35,7 @@ $(async function () {
 
     $('.search__btn').on('input', function () {
         if (pokemons.length > 0) {
+            window.stop()   
             let inputVal = $(this).val()
             const result = pokemons.filter(poke => poke['name'].startsWith(inputVal))
             createPagination(result, CONTAINER_ID)

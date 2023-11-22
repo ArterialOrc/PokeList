@@ -75,3 +75,6 @@ D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Microsoft.Extensions.Primitives.dll
 D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Pipelines.Sockets.Unofficial.dll
 D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\StackExchange.Redis.dll
 D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\FluentFTP.dll
+D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Castle.Core.dll
+D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Moq.dll
+D:\Study\PokeAPI\PokeAPI\obj\Debug\net7.0\PokeAPI.sourcelink.json
