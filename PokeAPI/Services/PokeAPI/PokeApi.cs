@@ -10,7 +10,7 @@ namespace PokeAPI.Services.PokeAPI
     {
         private const string _API_URL = "https://pokeapi.co/api/v2/pokemon";
         private IDistributedCache cache;
-        
+
         public PokeApi(IDistributedCache cache)
         {
             this.cache = cache;
@@ -29,6 +29,7 @@ namespace PokeAPI.Services.PokeAPI
                     count = int.Parse((string)pokeData["count"]);
                 }
             }
+
             return count;
         }
 
@@ -49,20 +50,25 @@ namespace PokeAPI.Services.PokeAPI
                     {
                         pokemons.Add(new Pokemon()
                         {
-                            Id = int.Parse(reg.Match(pokeName["url"].ToString()).Value.Replace("/","")),
+                            Id = int.Parse(reg.Match(pokeName["url"].ToString()).Value.Replace("/", "")),
                             Name = (string)pokeName["name"],
                         });
                     }
                 }
             }
+
             return pokemons;
         }
 
         public async Task<Pokemon> GetPokeInf(int id)
         {
-            var pokemonString = await cache.GetStringAsync(id.ToString());
-            if (!string.IsNullOrEmpty(pokemonString))
-                return JsonSerializer.Deserialize<Pokemon>(pokemonString);
+            string? pokemonString;
+            if (cache != null)
+            {
+                pokemonString = await cache.GetStringAsync(id.ToString());
+                if (!string.IsNullOrEmpty(pokemonString))
+                    return JsonSerializer.Deserialize<Pokemon>(pokemonString);
+            }
 
             using (var client = new HttpClient())
             {
@@ -71,12 +77,14 @@ namespace PokeAPI.Services.PokeAPI
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var pokeData = JObject.Parse(content);
-                    Match match = Regex.Match((string)pokeData["sprites"]["other"]["official-artwork"]["front_default"], "[^\\:]+\\.png");
+                    Match match = Regex.Match((string)pokeData["sprites"]["other"]["official-artwork"]["front_default"],
+                        "[^\\:]+\\.png");
                     string img = "https:";
                     if (match.Success)
                     {
                         img += match.Captures[0].Value;
                     }
+
                     var pokemon = new Pokemon()
                     {
                         Id = int.Parse((string)pokeData["id"]),
@@ -88,28 +96,33 @@ namespace PokeAPI.Services.PokeAPI
                         Image = img
                     };
                     pokemonString = JsonSerializer.Serialize(pokemon);
-                    await cache.SetStringAsync(pokemon.Id.ToString(), pokemonString, new DistributedCacheEntryOptions
+                    if (cache != null)
                     {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-                    });
+                        await cache.SetStringAsync(pokemon.Id.ToString(), pokemonString, new DistributedCacheEntryOptions
+                        {
+                            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+                        });
+                    }
                     return pokemon;
                 }
             }
+
             return null;
         }
+
         public async Task<int> GetPokeRandom()
         {
             Pokemon pokemon = null!;
             var lst = await GetPokeNames();
             Random rnd = new Random();
-            
+
             return lst[rnd.Next(lst.Count)].Id;
         }
+
         public Pokemon PokemonAttack(Pokemon pokemon, int attackPower)
         {
             pokemon.Hp = Math.Max(0, pokemon.Hp - attackPower);
             return pokemon;
         }
-
     }
 }

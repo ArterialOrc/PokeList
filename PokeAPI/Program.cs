@@ -12,7 +12,6 @@ Env.Load("Env/.env.docker");
 
 var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST");
 var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT");
-var ftpHost = Environment.GetEnvironmentVariable("FTP_HOST");
 
 var dbHost = Environment.GetEnvironmentVariable("POSTGRES_HOST");
 var dbPort = Environment.GetEnvironmentVariable("POSTGRES_PORT");
@@ -21,7 +20,6 @@ var dbUser = Environment.GetEnvironmentVariable("POSTGRES_USERNAME");
 var dbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
 var builder = WebApplication.CreateBuilder(args);
-string connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 
 builder.Services.AddDbContext<PokeDbContext>(options => options.UseNpgsql($"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}"));

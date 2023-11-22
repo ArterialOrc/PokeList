@@ -77,3 +77,6 @@ D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\FluentFTP.dll
 D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Castle.Core.dll
 D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Moq.dll
 D:\Study\PokeAPI\PokeAPI\obj\Debug\net7.0\PokeAPI.sourcelink.json
+D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\appsettings.json
+D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\DotNetEnv.dll
+D:\Study\PokeAPI\PokeAPI\bin\Debug\net7.0\Sprache.dll
