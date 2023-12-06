@@ -1,21 +1,76 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-    <meta charset='utf-8' />
-    <title>METANIT.COM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <title>Authorization</title>
 </head>
+
 <body>
-<h2>Login Form</h2>
-<form method='post'>
-    <p>
-        <label>Email</label><br />
-        <input name='email' />
-    </p>
-    <p>
-        <label>Password</label><br />
-        <input type='password' name='password' />
-    </p>
-    <input type='submit' value='Login' />
-</form>
+    <header class="py-3 mb-4 border-bottom">
+        <div class="container d-flex flex-wrap justify-content-center">
+            <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
+                <span class="fs-4">PokeAPI</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 mt-5">
+                <div class="card">
+                    <div class="card-header">
+                        Authorization
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="text" class="form-control" id="email" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Password">
+                        </div>
+                        <button id="login" class="btn btn-primary">Login</button>
+                        <button id="password-btn" class="btn btn-primary">Forgot Password</button>
+                        <div id="yandex"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade code__modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Authorization code modal</h5>
+                </div>
+                <form action="/code" method="post">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input name="email" type="email" class="form-control" id="input_email" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="code">Code</label>
+                        <input name="code" type="text" class="form-control" id="code" placeholder="Enter your code">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="../js/authorization.js"></script>
 </body>
+
 </html>

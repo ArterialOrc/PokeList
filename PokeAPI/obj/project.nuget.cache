@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "zmNyH+bHW902pJZBHAM7eVao3gNM5yihytqJad6aYyaDdrzr+InBZA3u4Hoz27WoZ8E2zJsmTttBkx3dK9KBiA==",
+  "dgSpecHash": "u0YUnRRR3f9I/lP/uorwpK7AG+YJl6B5xrHoAtMxAxiB4v1gD72meykuFzD6O9tgbZpsW7btwBlNgkPobUNJvg==",
   "success": true,
   "projectFilePath": "D:\\Study\\PokeAPI\\PokeAPI\\PokeAPI.csproj",
   "expectedPackageFiles": [
@@ -104,11 +104,7 @@
     "C:\\Users\\cevam\\.nuget\\packages\\system.threading.tasks.extensions\\4.3.0\\system.threading.tasks.extensions.4.3.0.nupkg.sha512",
     "C:\\Users\\cevam\\.nuget\\packages\\system.threading.timer\\4.3.0\\system.threading.timer.4.3.0.nupkg.sha512",
     "C:\\Users\\cevam\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
-    "C:\\Users\\cevam\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512",
-    "C:\\Users\\cevam\\.nuget\\packages\\microsoft.netcore.app.ref\\7.0.14\\microsoft.netcore.app.ref.7.0.14.nupkg.sha512",
-    "C:\\Users\\cevam\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\7.0.14\\microsoft.windowsdesktop.app.ref.7.0.14.nupkg.sha512",
-    "C:\\Users\\cevam\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\7.0.14\\microsoft.aspnetcore.app.ref.7.0.14.nupkg.sha512",
-    "C:\\Users\\cevam\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\7.0.14\\microsoft.netcore.app.host.win-x64.7.0.14.nupkg.sha512"
+    "C:\\Users\\cevam\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512"
   ],
   "logs": []
 }

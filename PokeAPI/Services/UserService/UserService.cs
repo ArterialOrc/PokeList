@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PokeAPI.Models;
 
 namespace PokeAPI.Services.UserService
@@ -8,20 +7,39 @@ namespace PokeAPI.Services.UserService
     {
         private PokeDbContext _pokeDb;
 
-        public UserService(PokeDbContext pokeDb)
+        public UserService([FromServices] PokeDbContext pokeDb)
         {
-            _pokeDb = pokeDb;
+            this._pokeDb = pokeDb;
         }
 
-        public async Task AddUser(User user)
+        public User? GetUser(string email)
         {
-            await _pokeDb.Users.AddAsync(user);
-            await _pokeDb.SaveChangesAsync();
+            return _pokeDb.Users.FirstOrDefault(user => user.Email.Equals(email));
         }
 
-        public async Task<List<User>> GetUsers()
+        public bool IsUserExists(string email)
         {
-            return await _pokeDb.Users.ToListAsync();
+            var user = _pokeDb.Users.FirstOrDefault(u => u.Email.Equals(email));
+            return user != null;
+        }
+
+        public void AddUser(string email, string password, byte[] salt)
+        {
+            var user = new User() 
+            { 
+                Email = email, 
+                Password = password, 
+                Salt = Convert.ToBase64String(salt)
+            };
+            _pokeDb.Users.Add(user);
+            _pokeDb.SaveChanges();
+        }
+
+        public void ChangePassword(string email, string newPassword)
+        {
+            var user = GetUser(email);
+            user.Password = newPassword;
+            _pokeDb.SaveChanges();
         }
     }
 }

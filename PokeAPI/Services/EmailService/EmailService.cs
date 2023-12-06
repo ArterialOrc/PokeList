@@ -23,4 +23,18 @@ public class EmailService : IEmailService
         await smtp.SendMailAsync(m);
         Console.WriteLine("Письмо отправлено");
     }
+
+    public async Task SendMessage(string email, string message,string subject, string pass)
+    {
+        MailAddress from = new MailAddress("cevamaltsev@yandex.ru", "Maltsev");
+        MailAddress to = new MailAddress(email);
+        MailMessage m = new MailMessage(from, to);
+        m.Subject = subject;
+        m.Body = message;
+        SmtpClient smtp = new SmtpClient("smtp.yandex.ru", 587);
+        smtp.Credentials = new NetworkCredential("cevamaltsev@yandex.ru",pass);
+        smtp.EnableSsl = true;
+        await smtp.SendMailAsync(m);
+        Console.WriteLine("Письмо отправлено");
+    }
 }

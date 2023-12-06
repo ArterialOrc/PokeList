@@ -7,23 +7,41 @@
 
     <link rel="stylesheet" href="../css/pagination.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <title>PokeAPI</title>
 </head>
 
 <body>
-    <input type="search" class="form-control search__btn" placeholder="Поиск..." aria-label="Search">
-    
-    <div class="content">
-        <div class="container">
-            <div class="pagination"></div>
-            <div class="content__inner" style="display: flex; flex-direction: row; align-items: center; flex-wrap: wrap;"></div>
+<header class="py-3 mb-4 border-bottom">
+    <div class="container d-flex flex-wrap justify-content-center">
+        <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
+            <span class="fs-4">PokeAPI</span>
+        </a>
+        
+        <div class="btn-group" style="margin-left: 15px;">
+            <button type="button" class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/login" target="_blank">Login</a></li>
+            </ul>
         </div>
     </div>
+</header>
+<input type="search" class="form-control search__btn" placeholder="Поиск..." aria-label="Search">
 
-    <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
-    <script src="../js/modules/pagination.js"></script>
-    <script src="../js/index.js" type="module"></script>
+<div class="content">
+    <div class="container">
+        <div class="pagination"></div>
+        <div class="content__inner"
+             style="display: flex; flex-direction: row; align-items: center; flex-wrap: wrap;"></div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+<script src="../js/modules/pagination.js"></script>
+<script src="../js/index.js" type="module"></script>
 </body>
 
 </html>

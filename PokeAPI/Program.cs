@@ -1,7 +1,9 @@
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using PokeAPI.Services;
+using PokeAPI.Services.AuthenticationService;
 using PokeAPI.Services.EmailService;
 using PokeAPI.Services.FightStatisticService;
 using PokeAPI.Services.PokeAPI;
@@ -19,22 +21,37 @@ var dbName = Environment.GetEnvironmentVariable("POSTGRES_DATABASE");
 var dbUser = Environment.GetEnvironmentVariable("POSTGRES_USERNAME");
 var dbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
+var yandexClientId = Environment.GetEnvironmentVariable("YANDEX_CLIENT_ID");
+var yandexTokenPageOrigin = Environment.GetEnvironmentVariable("YANDEX_TOKEN_PAGE_ORIGIN");
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddSingleton(provider => new YandexApi()
+{
+    ClientId = yandexClientId,
+    RedirectUri = "localhost:5157/yandex-test",
+    TokenPageOrigin = yandexTokenPageOrigin
+});
 builder.Services.AddDbContext<PokeDbContext>(options => options.UseNpgsql($"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}"));
 builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IFightStatisticService, FightStatisticService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IPokeApi, PokeApi>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = $"{redisHost}:{redisPort}";
 });
-builder.Services.AddAuthentication("Cookies").AddCookie(options => options.LoginPath = "/login");
-builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IFileProvider>(
         new PhysicalFileProvider(
             Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));

@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PokeAPI.Models;
+﻿using PokeAPI.Models;
 
-namespace PokeAPI.Services.UserService
+ namespace PokeAPI.Services.UserService
 {
     public interface IUserService
     {
-        Task<List<User>> GetUsers();
-        Task AddUser(User user);
+        User? GetUser(string email);
+        bool IsUserExists(string email);
+        void ChangePassword(string email, string newPassword);
+        void AddUser(string email, string password, byte[] salt);
     }
 }

@@ -19,5 +19,8 @@ namespace PokeAPI.Models
         [NotNull]
         [Column("los_poke")]
         public string LosPoke { get; set; }
+        
+        [Column("user_id")]
+        public Guid UserId { get; set; }
     }
 }

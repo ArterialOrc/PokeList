@@ -1,25 +1,20 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
-using Newtonsoft.Json.Linq;
 using PokeAPI.Models;
 using PokeAPI.Services.FightStatisticService;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.Json;
 using System.Net;
-using System.Net.Http.Json;
-using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using System.Text;
-using FluentFTP;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Distributed;
+using PokeAPI.Services;
 using PokeAPI.Services.EmailService;
 using PokeAPI.Services.PokeAPI;
 using PokeAPI.Services.UserService;
+using AuthenticationService = PokeAPI.Services.AuthenticationService.AuthenticationService;
+using IAuthenticationService = PokeAPI.Services.AuthenticationService.IAuthenticationService;
 
 namespace PokeAPI.Controllers
 {
@@ -27,12 +22,14 @@ namespace PokeAPI.Controllers
     public class HomeController : Controller
     {
         private readonly IFileProvider _fileProvider;
+        private IDistributedCache cache;
         
         private List<Pokemon> pokes = new List<Pokemon>();
 
-        public HomeController(IFileProvider fileProvider)
+        public HomeController(IFileProvider fileProvider,IDistributedCache cache)
         {
             _fileProvider = fileProvider;
+            this.cache = cache;
         }
 
         [HttpGet("/")]
@@ -63,7 +60,7 @@ namespace PokeAPI.Controllers
         public async Task<IActionResult> PokemonSave(int id,[FromServices] IPokeApi pokeApi,[FromServices] IUserService service)
         {
             var pokemon = await pokeApi.GetPokeInf(id);
-            var currentUser =( await service.GetUsers()).FirstOrDefault(p => (p.Email == HttpContext.User.Identity.Name));
+            var currentUser = service.GetUser(HttpContext.User.Identity.Name);
             string username = currentUser.Email;
             string password = currentUser.Password;
             
@@ -168,56 +165,129 @@ namespace PokeAPI.Controllers
         }
 
         [HttpPost("api/stat")]
-        public async Task SetStatistics([FromServices] IFightStatisticService service)
+        public async Task SetStatistics([FromServices] IFightStatisticService service,[FromServices] IUserService userService)
         {
             var request = HttpContext.Request;
             var statistic = await request.ReadFromJsonAsync<FightStatistic>();
             if(statistic != null)
             {
                 statistic.Id = Guid.NewGuid().ToString();
+                if (User.Identity.Name != null) statistic.UserId = userService.GetUser(User.Identity.Name)!.UserId;
                 await service.AddFightStatistic(statistic);
             }
         }
 
         [HttpGet("/login")]
-        public IActionResult Login()
+        public IActionResult Log()
         {
             var filePath = _fileProvider.GetFileInfo("/html/login.html").PhysicalPath;
             var contentType = "text/html";
             return PhysicalFile(filePath, contentType);
         }
 
-        [HttpPost("/login")]
-        public async Task<IResult> LoginPost([FromServices] IUserService service)
+        [HttpPost("/pass-change")]
+        public async Task<IActionResult> Pass([FromBody] User user, [FromServices] IAuthenticationService authenticationService,[FromServices] IEmailService emailer)
         {
-            
-            var form = HttpContext.Request.Form;
-            
-            if (!form.ContainsKey("email") || !form.ContainsKey("password"))
-                return Results.BadRequest("Email и/или пароль не установлены");
- 
-            string email = form["email"];
-            string password = form["password"];
+            var newPass = new Random().Next(10_000, 100_000);
+            authenticationService.ChangePassword(user.Email, newPass.ToString());
+            string pass = Environment.GetEnvironmentVariable("YASMTP_PASSWORD");
+            await emailer.SendMessage(user.Email, $"Новый пароль: {newPass}", "Новый пароль для PokeAPI", pass);
+            return Ok();
+        }
 
-            var users = await service.GetUsers();
-            // находим пользователя 
-            User? user = users.FirstOrDefault(p => p.Email == email && p.Password == password);
-            // если пользователь не найден, отправляем статусный код 401
-            if (user is null) return Results.Unauthorized();
- 
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Email) };
-            // создаем объект ClaimsIdentity
+        [HttpPost("/login")]
+        public async Task<IActionResult> Login([FromBody] User user,[FromServices] IAuthenticationService authenticationService,[FromServices] IEmailService emailer)
+        {
+            if(!authenticationService.Authorization(user.Email, user.Password))
+                return BadRequest(new { Message = "Неправильный логин или пароль" });
+
+            var code = new Random().Next(1000, 10000);
+            await HashCode(user.Email, code);
+            string pass = Environment.GetEnvironmentVariable("YASMTP_PASSWORD");
+            await emailer.SendMessage(user.Email, $"Код: {code}", "Код для авторизации на PokeAPI",pass);
+            return Ok();
+        }
+
+        [HttpPost("/code")]
+        public async Task<IActionResult> Code([FromForm] string email, [FromForm] string code)
+        {
+            var origCode = await cache.GetStringAsync(email);
+            if (!origCode.Equals(code))
+                return BadRequest();
+            cache.Remove(email);
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, email) };
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Cookies");
-            // установка аутентификационных куки
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-            return Results.Redirect("/");;
+            return Redirect("/");
+        }
+
+        [NonAction]
+        private async Task HashCode(string email, int code)
+        {
+            await cache.SetStringAsync(email, $"{code}", new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(4)
+            });
         }
         
+        
+        [HttpGet("/registration")]
+        public IActionResult Page()
+        {
+            var filePath = _fileProvider.GetFileInfo("/html/registration.html").PhysicalPath;
+            var contentType = "text/html";
+            return PhysicalFile(filePath, contentType);
+        }
+
+        [HttpPost("/registration")]
+        public IActionResult Registration([FromServices] IAuthenticationService service,[FromForm] string email, [FromForm] string password)
+        {
+            if (!service.Registration(email, password))
+                return Conflict(new { Message = "Пользователь с таким email уже существует" });
+            return RedirectPermanent("/");
+        }
+        
+        [HttpPost("/yandex-login")]
+        public async Task<IActionResult> YandexLogin([FromServices] IAuthenticationService authenticationService, [FromBody] User user)
+        {
+            authenticationService.Registration(user.Email, "123");
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Email) };
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Cookies");
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+            return Redirect("/");
+        }
+
         [HttpGet("/logout")]
-        public async Task Logout()
+        public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            Results.Redirect("/login");
+            return Ok("Вы вышли из системы");
+        }
+
+        [HttpGet("/current")]
+        public IActionResult Current()
+        {
+            return Content($"Current user: {User.Identity.Name}");
+        }
+
+        [HttpGet("/yandex-data")]
+        public IActionResult YandexData([FromServices] YandexApi yandexApi)
+        {
+            return Ok(new
+            {
+                ClientId = yandexApi.ClientId,
+                ResponseType = yandexApi.ResponseType,
+                RedirectUri = yandexApi.RedirectUri,
+                TokenPageOrigin = yandexApi.TokenPageOrigin
+            });
+        }
+
+        [HttpGet("/yandex-test")]
+        public IActionResult YandexTest()
+        {
+            var filePath = _fileProvider.GetFileInfo("/html/test.html").PhysicalPath;
+            var contentType = "text/html";
+            return PhysicalFile(filePath, contentType);
         }
 
     }
